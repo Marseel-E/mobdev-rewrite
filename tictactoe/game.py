@@ -14,7 +14,8 @@ class Game:
 		assert (3 >= size <= 5)
 		self.size = size
 		self.player = Tile.player
-		self.opponent = Tile.opponent		
+		self.opponent = Tile.opponent
+		self.current_player = self.player
 		self.tiles = [[Tile.empty for i in range(self.size)] for i in range(self.size)]
 
 
