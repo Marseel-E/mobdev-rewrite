@@ -12,10 +12,18 @@ class Game:
 		self.opponent = opponent
 		self.turn = player
 		self.size = size
-		self.board = [['_' for i in  range(size)] for i in range(size)]
+		self.board = [["\u200b" for i in  range(size)] for i in range(size)]
 
 	def switch_turn(self) -> None:
 		self.turn = self.player if self.turn.id == self.opponent.id else self.opponent
+
+	def draw_check(self) -> bool:
+		for row in range(self.size):
+			for col in range(self.size):
+				if self.board[row][col] == "\u200b":
+					return False
+
+		return True
 
 	def win_check(self) -> bool:
 		user = self.turn
@@ -70,7 +78,7 @@ class Game_button(Button):
 		self.inter = inter
 
 		super().__init__(
-			label="_",
+			label="\u200b",
 			style=ButtonStyle.blurple,
 			row=coords[0]
 		)
@@ -81,18 +89,18 @@ class Game_button(Button):
 
 		game.board[row][col] = game.turn
 
-		label = "o"
+		label = "⭕"
 		style = ButtonStyle.red
 
 		if game.turn.id == game.player.id:
-			label = "x"
+			label = "❌"
 			style = ButtonStyle.green
 
 		self.label = label
 		self.style = style
 		self.disabled = True
 
-		if game.win_check():
+		if game.win_check() or game.draw_check():
 			return self.view.stop()
 
 		game.switch_turn()
@@ -107,14 +115,14 @@ class Game_view(View):
 		super().__init__(timeout=300.0)
 
 	async def interaction_check(self, inter: Inter) -> bool:
-		if self.game.win_check():
+		if self.game.win_check() or self.game.draw_check():
 			self.stop()
 			return False
 
 		return inter.user.id == self.game.turn.id
 
 	async def on_timeout(self) -> None:
-		if not self.game.win_check():
+		if not (self.game.win_check() or self.game.draw_check()):
 			self.game.switch_turn()
 		
 		self.stop()
@@ -149,7 +157,12 @@ class TicTacToe(Cog, Group, name="tic-tac-toe"):
 		await inter.response.send_message(content=f"turn: {game.turn.mention}", view=view)
 		await view.wait()
 
-		await inter.edit_original_message(content=f":tada: {game.turn.mention} won :tada:", view=None)
+		content = f":tada: {game.turn.mention} won :tada:"
+
+		if game.draw_check() and (not game.win_check()):
+			content = ":tada: draw :tada:"
+
+		await inter.edit_original_message(content=content, view=None)
 
 
 async def setup(bot: Bot) -> None:
