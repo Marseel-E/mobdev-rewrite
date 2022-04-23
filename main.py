@@ -1,4 +1,5 @@
 from os import environ, listdir
+from traceback import print_tb
 
 from discord import Status, Game, Intents
 from discord.ext.commands import Bot
@@ -10,13 +11,14 @@ from utils import Default
 
 
 class MobDev(Bot):
-	def __init__(self, status: str = "minigames.exe") -> None:
-		self.status = status
+	def __init__(self) -> None:
 		super().__init__(
 			help_command=None,
 			command_prefix=".",
 			case_sensitive=True,
-			intents=Intents.default()
+			status=Status.online,
+			intents=Intents.default(),
+			activity=Game("minigames.exe"),
 			application_id=environ.get("APP_ID"),
 			description="A feature-rich & well designed minigames bot"
 		)
@@ -29,17 +31,19 @@ class MobDev(Bot):
 			try:
 				await self.load_extension(f'games.{game}.core')
 			except Exception as e:
-				print(f"ERROR: failed to load '{game}'", e, sep="\n")
+				print(f"ERROR: failed to load '{game}'", end="\n")
+				print_tb(e)
 			else:
 				print(f"STATUS: loaded '{game}'", end="\n")
 
-		await self.tree.sync()
-		await self.tree.sync(guild=Default.test_server)
-
-		await self.change_presence(
-			status=Status.online,
-			activity=Game(self.status)
-		)
+		try:
+			await self.tree.sync()
+			await self.tree.sync(guild=Default.test_server)
+		except Exception as e:
+			print("ERROR: failed to sync commands", end="\n")
+			print_tb(e)
+		else:
+			print("STATUS: synced commands")
 
 
 if __name__ == '__main__':

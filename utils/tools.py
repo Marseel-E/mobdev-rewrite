@@ -2,7 +2,7 @@ __all__ = ['Color', 'Default']
 
 from dataclasses import dataclass
 
-from discord import D_Object
+from discord import Object as D_Object
 
 
 @dataclass
