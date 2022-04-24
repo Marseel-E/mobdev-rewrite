@@ -135,9 +135,7 @@ class TicTacToe(Cog, Group, name="tic-tac-toe"):
 		super().__init__()
 
 
-	@command(
-		description="Play a game of Tic Tac Toe against someone."
-	)
+	@command(description="Play a game of Tic Tac Toe against someone.")
 	@describe(
 		opponent="The user to play against.",
 		bet="The amount of coins to bet on this game."
