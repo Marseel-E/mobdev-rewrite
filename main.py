@@ -28,6 +28,9 @@ class MobDev(Bot):
 
 	async def setup_hook(self) -> None:
 		for game in listdir('games'):
+			if 'core.py' not in listdir(f'games/{game}'):
+				continue
+			
 			try:
 				await self.load_extension(f'games.{game}.core')
 			except Exception as e:

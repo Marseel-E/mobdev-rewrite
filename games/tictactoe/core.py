@@ -141,6 +141,9 @@ class TicTacToe(Cog, Group, name="tic-tac-toe"):
 		bet="The amount of coins to bet on this game."
 	)
 	async def play(self, inter: Inter, opponent: D_Member, bet: int = 0, size: int = 3) -> None:
+		if inter.user.id == opponent.user.id:
+			return await inter.response.send_message("You can't play with yourself m8", ephemeral=True)
+
 		game = Game(
 			player=inter.user, 
 			opponent=opponent,

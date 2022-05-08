@@ -1,26 +1,3 @@
-import aiohttp
-
-from typing import TypedDict
-
-from pprint import pprint
-
-from discord.enums import ButtonStyle
-
-
-class QuestionData(TypedDict):
-	category: str
-	type: str
-	difficulty: str
-	question: str
-	correct_answer: str
-	incorrect_answers: list[str]
-
-async def get_question() -> QuestionData:
-	async with aiohttp.ClientSession() as session:
-		async with session.get('https://opentdb.com/api.php?amount=1') as response:
-			return (await response.json())['results'][0]
-
-
 from discord import Interaction as Inter, Embed, ButtonStyle
 from discord.ui import View, Button, button
 
@@ -57,11 +34,13 @@ class Trivia_view(View):
 	async def on_timeout(self) -> None:
 		await self.inter.delete_original_message()
 
+
 import random
 import html
 
 from discord.ext.commands import Cog, Bot
 from discord.app_commands import Group, command, describe
+from trivia import Client, TokenEmpty
 
 from utils import Default
 
@@ -76,7 +55,17 @@ class Trivia(Cog, Group, name="trivia"):
 	@command(description="Random trivia questions.")
 	@describe(bet="The amount of coins to bet on this question.")
 	async def play(self, inter: Inter, bet: int = 0) -> None:
-		question = await get_question()
+		session_token = await Client.get_session_token()
+
+		async with Client(session_token) as session:
+			try:
+				question = await session.get_questions(amount=1)
+			except TokenEmpty:
+				await session.reset_session_token()
+			else:
+				question = await session.get_questions(amount=1)
+
+		question = question[0]
 
 		embed = Embed(
 			title=html.unescape(question['question']),
